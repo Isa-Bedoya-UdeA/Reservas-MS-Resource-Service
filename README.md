@@ -10,7 +10,7 @@
 
 ## Descripción
 
-CodeF@ctory - Caso 15 - Plataforma de Reservas de Servicios - Microservicio de Recursos y Disponibilidad
+CodeF@ctory - Caso 15 - Plataforma de Reservas de Servicios - Microservicio de Recursos y Disponibilidad.
 
 ## Responsabilidad
 
