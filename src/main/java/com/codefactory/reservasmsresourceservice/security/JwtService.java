@@ -1,4 +1,4 @@
-package com.codefactory.reservasmsresourceservice.service;
+package com.codefactory.reservasmsresourceservice.security;
 
 import io.jsonwebtoken.Claims;
 import java.util.function.Function;

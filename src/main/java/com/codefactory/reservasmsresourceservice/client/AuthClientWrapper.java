@@ -3,7 +3,6 @@ package com.codefactory.reservasmsresourceservice.client;
 import com.codefactory.reservasmsresourceservice.dto.external.ExternalClientDTO;
 import com.codefactory.reservasmsresourceservice.dto.external.ExternalProviderDTO;
 import com.codefactory.reservasmsresourceservice.exception.ExternalServiceException;
-import com.codefactory.reservasmsresourceservice.exception.ResourceNotFoundException;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -22,7 +21,7 @@ public class AuthClientWrapper {
             }
             throw ExternalServiceException.unavailable("auth-service");
         } catch (FeignException.NotFound e) {
-            throw new ResourceNotFoundException("Cliente no encontrado en servicio de autenticación");
+            throw ExternalServiceException.unavailable("auth-service");
         } catch (FeignException e) {
             throw ExternalServiceException.unavailable("auth-service");
         }
@@ -36,7 +35,7 @@ public class AuthClientWrapper {
             }
             throw ExternalServiceException.unavailable("auth-service");
         } catch (FeignException.NotFound e) {
-            throw new ResourceNotFoundException("Proveedor no encontrado en servicio de autenticación");
+            throw ExternalServiceException.unavailable("auth-service");
         } catch (FeignException e) {
             throw ExternalServiceException.unavailable("auth-service");
         }

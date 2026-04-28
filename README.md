@@ -14,7 +14,7 @@ CodeF@ctory - Caso 15 - Plataforma de Reservas de Servicios - Microservicio de H
 
 ## Responsabilidad
 
-Gestión de horarios y empleados.
+Gestión de empleados, asignación de servicios a empleados, y disponibilidad de horarios para reservas.
 
 ## Tecnologías
 
@@ -56,7 +56,43 @@ cd Reservas-MS-Schedule-Service
 
 ### 2. Configurar la Base de Datos y Propiedades
 
+Copia el archivo `.env.example` a `.env`:
+
+```bash
+cp .env.example .env
+```
+
+Edita el archivo `.env` con tus credenciales de Supabase:
+
+```bash
+# SPRING PROFILE
+SPRING_PROFILE=dev
+
+# DATABASE CONFIG - SUPABASE (Transaction Pooler - IPv4 compatible)
+DB_URL=jdbc:postgresql://aws-1-us-west-2.pooler.supabase.com:6543/postgres?sslmode=require&prepareThreshold=0
+DB_USER=postgres.[TU-PROJECT-REF]
+DB_PASSWORD=[TU-CONTRASEÑA-DE-SUPABASE]
+
+# EXTERNAL SERVICES URLs
+SERVICES_AUTH_URL=http://localhost:8081
+```
+
 ### 3. Configurar JWT
+
+Genera un JWT_SECRET seguro:
+
+```bash
+openssl rand -base64 64
+```
+
+Agrega el JWT_SECRET generado a tu archivo `.env`:
+
+```bash
+JWT_SECRET=[TU-JWT-SECRET-SEGURA]
+JWT_EXPIRATION=86400000
+```
+
+> **IMPORTANTE:** El JWT_SECRET debe ser el mismo en todos los microservicios.
 
 ### 4. Compilar el Proyecto
 
@@ -81,11 +117,61 @@ La aplicación estará disponible en: `http://localhost:8083`
 
 ## Estructura del Proyecto
 
+```
+Reservas-MS-Schedule-Service/
+├── src/
+│   ├── main/
+│   │   ├── java/com/codefactory/reservasmsresourceservice/
+│   │   │   ├── client/              # Feign Clients para comunicación entre microservicios
+│   │   │   ├── config/              # Configuración de Spring (Security, JWT, CORS, etc.)
+│   │   │   ├── controller/          # Controladores REST (Employee, Health)
+│   │   │   ├── dto/                 # Data Transfer Objects (Request y Response)
+│   │   │   ├── entity/              # Entidades JPA (Employee, EmployeeServiceOffering, Availability)
+│   │   │   ├── exception/           # Excepciones personalizadas y manejo global
+│   │   │   ├── mapper/              # Mapeadores (MapStruct) entre entidades y DTOs
+│   │   │   ├── repository/          # Repositorios Spring Data JPA
+│   │   │   ├── security/            # Seguridad (JWT filter, JWT service)
+│   │   │   ├── service/             # Interfaces de servicios
+│   │   │   └── service/impl/        # Implementaciones de servicios
+│   │   └── resources/
+│   │       ├── application.properties
+│   │       ├── application-dev.properties
+│   │       ├── application-prod.properties
+│   │       └── application-test.properties
+│   └── test/
+│       ├── java/                    # Tests unitarios y de integración
+│       └── resources/
+├── docs/                            # Documentación y pruebas
+├── .env.example                     # Plantilla de variables de entorno
+├── .env                             # Variables de entorno (no versionado)
+├── pom.xml                          # Configuración de Maven
+└── README.md
+```
+
 ## Endpoints Principales
 
-* `GET /api/`: Health Check
-* `GET /api/version`: Version Check
+### Health Check
+- `GET /api/`: Health Check - Retorna estado del servicio
+- `GET /api/version`: Version Check - Retorna versión del servicio
+
+### Empleados
+- `POST /api/schedule/employees`: Crear empleado (requiere ROLE_PROVEEDOR) - El providerId se obtiene del JWT
+- `PUT /api/schedule/employees/{id}`: Actualizar empleado existente (requiere ROLE_PROVEEDOR) - Solo el proveedor creador puede modificar
+- `DELETE /api/schedule/employees/{id}`: Desactivar empleado (soft delete) (requiere ROLE_PROVEEDOR) - Solo el proveedor creador puede desactivar
+- `GET /api/schedule/employees/{id}`: Obtener empleado por ID (requiere ROLE_PROVEEDOR) - Solo el proveedor dueño puede ver
+- `GET /api/schedule/employees`: Listar todos los empleados del proveedor autenticado (requiere ROLE_PROVEEDOR)
+- `GET /api/schedule/employees/active`: Listar solo empleados activos del proveedor autenticado (requiere ROLE_PROVEEDOR)
+
+## Relaciones entre Entidades
+
+- **Employee**: Entidad que representa empleados (recurso humano) asociados a proveedores
+- **EmployeeServiceOffering**: Entidad que representa la relación N:N entre empleados y servicios (un empleado puede ofrecer múltiples servicios)
+- **Availability**: Entidad que representa los horarios de disponibilidad de los empleados para reservas
+
+## Documentación de API (Swagger/OpenAPI)
+
+**Ruta de acceso:** http://localhost:8083/swagger-ui/index.html#/
 
 ## Pruebas en Postman
 
-> Importante: El `Content-Type` de las peticiones debe ser `application/json`.
+Para ver las pruebas detalladas de la API, consulta el archivo [docs/PruebasPostman.md](docs/PruebasPostman.md).

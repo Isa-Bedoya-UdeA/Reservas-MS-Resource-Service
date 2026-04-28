@@ -8,47 +8,40 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.UUID;
 
 /**
- * Entity representing availability schedules for employees.
- * Table: disponibilidad
+ * Entity representing the many-to-many relationship between employees and services.
+ * Table: empleado_servicio
  */
 @Entity
-@Table(name = "disponibilidad")
+@Table(name = "empleado_servicio")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Availability {
+public class EmployeeServiceOffering {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id_disponibilidad")
+    @Column(name = "id_empleado_servicio")
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_empleado", nullable = false, foreignKey = @ForeignKey(name = "fk_disponibilidad_empleado"))
+    @JoinColumn(name = "id_empleado", nullable = false, foreignKey = @ForeignKey(name = "fk_empleado_servicio_empleado"))
     private Employee employee;
 
-    @Column(name = "dia_semana", nullable = false, length = 10)
-    private String dayOfWeek;
-
-    @Column(name = "hora_inicio", nullable = false)
-    private LocalTime startTime;
-
-    @Column(name = "hora_fin", nullable = false)
-    private LocalTime endTime;
-
-    @Column(name = "fecha_especial")
-    private LocalDate specialDate;
+    @Column(name = "id_servicio", nullable = false)
+    private UUID serviceId;
 
     @Column(name = "activo", nullable = false)
     @Builder.Default
     private Boolean active = true;
+
+    @Column(name = "fecha_asignacion", nullable = false, updatable = false)
+    @CreationTimestamp
+    private LocalDateTime assignmentDate;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

@@ -1,6 +1,6 @@
-package com.codefactory.reservasmsresourceservice.service.impl;
+package com.codefactory.reservasmsresourceservice.security.impl;
 
-import com.codefactory.reservasmsresourceservice.service.JwtService;
+import com.codefactory.reservasmsresourceservice.security.JwtService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;

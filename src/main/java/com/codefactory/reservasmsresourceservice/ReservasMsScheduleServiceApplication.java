@@ -6,10 +6,10 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @SpringBootApplication
 @EnableFeignClients
-public class ReservasMsResourceServiceApplication {
+public class ReservasMsScheduleServiceApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(ReservasMsResourceServiceApplication.class, args);
+        SpringApplication.run(ReservasMsScheduleServiceApplication.class, args);
     }
 
 }

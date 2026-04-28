@@ -8,47 +8,44 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.UUID;
 
 /**
- * Entity representing availability schedules for employees.
- * Table: disponibilidad
+ * Entity representing an employee associated with a provider.
+ * Table: empleado
  */
 @Entity
-@Table(name = "disponibilidad")
+@Table(name = "empleado")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Availability {
+public class Employee {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id_disponibilidad")
+    @Column(name = "id_empleado")
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_empleado", nullable = false, foreignKey = @ForeignKey(name = "fk_disponibilidad_empleado"))
-    private Employee employee;
+    @Column(name = "id_proveedor", nullable = false)
+    private UUID providerId;
 
-    @Column(name = "dia_semana", nullable = false, length = 10)
-    private String dayOfWeek;
+    @Column(name = "nombre_completo", nullable = false, length = 150)
+    private String fullName;
 
-    @Column(name = "hora_inicio", nullable = false)
-    private LocalTime startTime;
-
-    @Column(name = "hora_fin", nullable = false)
-    private LocalTime endTime;
-
-    @Column(name = "fecha_especial")
-    private LocalDate specialDate;
+    @Column(name = "telefono", length = 20)
+    private String phone;
 
     @Column(name = "activo", nullable = false)
     @Builder.Default
     private Boolean active = true;
+
+    @Column(name = "fecha_contratacion")
+    private LocalDateTime hireDate;
+
+    @Column(name = "notas", length = 500)
+    private String notes;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
