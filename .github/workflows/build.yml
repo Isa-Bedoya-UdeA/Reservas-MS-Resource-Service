@@ -71,7 +71,7 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
       #Analyze project with SonarCloud
       - name: Analyze with SonarCloud
-        run: mvn -B verify sonar:sonar -Dsonar.projectKey=Isa-Bedoya-UdeA_Reservas-MS-Resource-Service -Dsonar.organization=isa-bedoya-udea -Dsonar.host.url=https://sonarcloud.io -Dsonar.token=$SONAR_TOKEN
+        run: mvn -B verify sonar:sonar -Dsonar.projectKey=Isa-Bedoya-UdeA_Reservas-MS-Schedule-Service -Dsonar.organization=isa-bedoya-udea -Dsonar.host.url=https://sonarcloud.io -Dsonar.token=$SONAR_TOKEN
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -111,12 +111,12 @@ jobs:
           #Set artifact name
           name: artifact
           #From this path
-          path: target/reservas-ms-resource-service.jar
+          path: target/reservas-ms-schedule-service.jar
 
       - name: Build & push Docker image
         uses: mr-smithers-excellent/docker-build-push@v6
         with:
-          image: isabedoya/reservas-ms-resource-service
+          image: isabedoya/reservas-ms-schedule-service
           tags: latest
           registry: docker.io
           dockerfile: Dockerfile

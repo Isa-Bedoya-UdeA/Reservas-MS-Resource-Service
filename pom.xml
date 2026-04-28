@@ -5,14 +5,14 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.13</version>
+        <version>3.5.14</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.codefactory</groupId>
-    <artifactId>Reservas-MS-Resource-Service</artifactId>
+    <artifactId>Reservas-MS-Schedule-Service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>Reservas-MS-Resource-Service</name>
-    <description>CodeF@ctory - Caso 15 - Plataforma de Reservas de Servicios - Microservicio de Recursos y Disponibilidad</description>
+    <name>Reservas-MS-Schedule-Service</name>
+    <description>CodeF@ctory - Caso 15 - Plataforma de Reservas de Servicios - Microservicio de Horarios y Disponibilidad</description>
     <url/>
     <licenses>
         <license/>
@@ -35,7 +35,7 @@
         <lombok.version>1.18.36</lombok.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <sonar.projectKey>Isa-Bedoya-UdeA_Reservas-MS-Resource-Service</sonar.projectKey>
+        <sonar.projectKey>Isa-Bedoya-UdeA_Reservas-MS-Schedule-Service</sonar.projectKey>
         <sonar.organization>isa-bedoya-udea</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     </properties>
@@ -260,6 +260,6 @@
             </resource>
         </resources>
 
-        <finalName>reservas-ms-resource-service</finalName>
+        <finalName>reservas-ms-schedule-service</finalName>
     </build>
 </project>
