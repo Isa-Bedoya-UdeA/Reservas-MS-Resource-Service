@@ -1,4 +1,4 @@
-# Plataforma de Reservas de Servicios - MS-Resource-Service
+# Plataforma de Reservas de Servicios - MS-Schedule-Service
 
 [![CI/CD Pipeline](https://github.com/Isa-Bedoya-UdeA/Reservas-MS-Schedule-Service/actions/workflows/build.yml/badge.svg)](https://github.com/Isa-Bedoya-UdeA/Reservas-MS-Schedule-Service/actions/workflows/build.yml)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Isa-Bedoya-UdeA_Reservas-MS-Schedule-Service&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Isa-Bedoya-UdeA_Reservas-MS-Schedule-Service)
@@ -10,11 +10,11 @@
 
 ## Descripción
 
-CodeF@ctory - Caso 15 - Plataforma de Reservas de Servicios - Microservicio de Recursos y Disponibilidad.
+CodeF@ctory - Caso 15 - Plataforma de Reservas de Servicios - Microservicio de Horarios y Empleados.
 
 ## Responsabilidad
 
-Gestión de recursos y agendas
+Gestión de horarios y empleados.
 
 ## Tecnologías
 
