@@ -310,14 +310,17 @@ Authorization: Bearer [JWT_TOKEN_PROVEEDOR]
 **Headers:**
 ```
 Authorization: Bearer [JWT_TOKEN_MICROSERVICIO_RESERVAS]
+Content-Type: application/json
 ```
-**Query Parameters:**
-```
-employeeId=uuid-del-empleado
-reservationId=uuid-de-la-reserva
-date=2026-12-15
-startTime=14:00
-endTime=15:00
+**Body:**
+```json
+{
+    "employeeId": "uuid-del-empleado",
+    "reservationId": "uuid-de-la-reserva",
+    "date": "2026-12-15",
+    "startTime": "14:00",
+    "endTime": "15:00"
+}
 ```
 **Código esperado:** 201 Created
 **Response esperado:** (vacío)
@@ -338,17 +341,20 @@ Authorization: Bearer [JWT_TOKEN_MICROSERVICIO_RESERVAS]
 
 **Nombre:** Check Employee Availability - Available
 **URL:** `http://localhost:8083/api/schedule/schedule-blocks/check-availability`
-**Método:** GET
+**Método:** POST
 **Headers:**
 ```
 Authorization: Bearer [JWT_TOKEN_CUALQUIERA]
+Content-Type: application/json
 ```
-**Query Parameters:**
-```
-employeeId=uuid-del-empleado
-date=2026-12-15
-startTime=14:00
-endTime=15:00
+**Body:**
+```json
+{
+    "employeeId": "uuid-del-empleado",
+    "date": "2026-12-15",
+    "startTime": "14:00",
+    "endTime": "15:00"
+}
 ```
 **Código esperado:** 200 OK
 **Response esperado:** `true`
@@ -356,16 +362,20 @@ endTime=15:00
 ### 14. Listar Bloqueos por Rango de Fechas
 
 **Nombre:** Get Schedule Blocks by Date Range - Success
-**URL:** `http://localhost:8083/api/schedule/schedule-blocks/employee/[UUID-EMPLEADO]/date-range`
-**Método:** GET
+**URL:** `http://localhost:8083/api/schedule/schedule-blocks/date-range`
+**Método:** POST
 **Headers:**
 ```
 Authorization: Bearer [JWT_TOKEN_CUALQUIERA]
+Content-Type: application/json
 ```
-**Query Parameters:**
-```
-startDate=2026-12-01
-endDate=2026-12-31
+**Body:**
+```json
+{
+    "employeeId": "uuid-del-empleado",
+    "startDate": "2026-12-01",
+    "endDate": "2026-12-31"
+}
 ```
 **Código esperado:** 200 OK
 **Response esperado:** (array de bloqueos en el rango)

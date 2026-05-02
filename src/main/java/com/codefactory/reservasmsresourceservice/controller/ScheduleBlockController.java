@@ -1,6 +1,9 @@
 package com.codefactory.reservasmsresourceservice.controller;
 
 import com.codefactory.reservasmsresourceservice.dto.request.CreateScheduleBlockRequestDTO;
+import com.codefactory.reservasmsresourceservice.dto.request.CreateReservationBlockRequestDTO;
+import com.codefactory.reservasmsresourceservice.dto.request.CheckAvailabilityRequestDTO;
+import com.codefactory.reservasmsresourceservice.dto.request.GetScheduleBlocksByDateRangeRequestDTO;
 import com.codefactory.reservasmsresourceservice.dto.response.ScheduleBlockResponseDTO;
 import com.codefactory.reservasmsresourceservice.service.ScheduleBlockService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -128,21 +131,24 @@ public class ScheduleBlockController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/employee/{employeeId}/date-range")
+    @PostMapping("/date-range")
     @Operation(
         summary = "Get schedule blocks by employee and date range",
         description = "Obtiene los bloqueos de horario de un empleado en un rango de fechas específico. Disponible para cualquier usuario autenticado."
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Schedule blocks found"),
+        @ApiResponse(responseCode = "400", description = "Invalid input data"),
         @ApiResponse(responseCode = "401", description = "Not authenticated"),
         @ApiResponse(responseCode = "404", description = "Employee not found")
     })
     public ResponseEntity<List<ScheduleBlockResponseDTO>> getScheduleBlocksByEmployeeAndDateRange(
-            @Parameter(description = "ID del empleado") @PathVariable UUID employeeId,
-            @Parameter(description = "Fecha de inicio") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @Parameter(description = "Fecha de fin") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        List<ScheduleBlockResponseDTO> response = scheduleBlockService.getScheduleBlocksByEmployeeAndDateRange(employeeId, startDate, endDate);
+            @Valid @RequestBody GetScheduleBlocksByDateRangeRequestDTO request) {
+        List<ScheduleBlockResponseDTO> response = scheduleBlockService.getScheduleBlocksByEmployeeAndDateRange(
+            request.getEmployeeId(), 
+            request.getStartDate(), 
+            request.getEndDate()
+        );
         return ResponseEntity.ok(response);
     }
 
@@ -176,12 +182,14 @@ public class ScheduleBlockController {
         @ApiResponse(responseCode = "409", description = "Schedule block conflicts with existing block")
     })
     public ResponseEntity<Void> createReservationBlock(
-            @Parameter(description = "ID del empleado") @RequestParam UUID employeeId,
-            @Parameter(description = "ID de la reserva") @RequestParam UUID reservationId,
-            @Parameter(description = "Fecha de la reserva") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-            @Parameter(description = "Hora de inicio") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) java.time.LocalTime startTime,
-            @Parameter(description = "Hora de fin") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) java.time.LocalTime endTime) {
-        scheduleBlockService.createReservationBlock(employeeId, reservationId, date, startTime, endTime);
+            @Valid @RequestBody CreateReservationBlockRequestDTO request) {
+        scheduleBlockService.createReservationBlock(
+            request.getEmployeeId(), 
+            request.getReservationId(), 
+            request.getDate(), 
+            request.getStartTime(), 
+            request.getEndTime()
+        );
         return ResponseEntity.status(201).build();
     }
 
@@ -200,22 +208,25 @@ public class ScheduleBlockController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/check-availability")
+    @PostMapping("/check-availability")
     @Operation(
         summary = "Check employee availability",
         description = "Verifica si un empleado está disponible en una fecha y hora específicas. Disponible para cualquier usuario autenticado."
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Availability checked successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid input data"),
         @ApiResponse(responseCode = "401", description = "Not authenticated"),
         @ApiResponse(responseCode = "404", description = "Employee not found")
     })
     public ResponseEntity<Boolean> checkEmployeeAvailability(
-            @Parameter(description = "ID del empleado") @RequestParam UUID employeeId,
-            @Parameter(description = "Fecha") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-            @Parameter(description = "Hora de inicio") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) java.time.LocalTime startTime,
-            @Parameter(description = "Hora de fin") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) java.time.LocalTime endTime) {
-        boolean isAvailable = scheduleBlockService.isEmployeeAvailable(employeeId, date, startTime, endTime);
+            @Valid @RequestBody CheckAvailabilityRequestDTO request) {
+        boolean isAvailable = scheduleBlockService.isEmployeeAvailable(
+            request.getEmployeeId(), 
+            request.getDate(), 
+            request.getStartTime(), 
+            request.getEndTime()
+        );
         return ResponseEntity.ok(isAvailable);
     }
 }
