@@ -14,7 +14,7 @@ CodeF@ctory - Caso 15 - Plataforma de Reservas de Servicios - Microservicio de H
 
 ## Responsabilidad
 
-Gestión de empleados, asignación de servicios a empleados, y disponibilidad de horarios para reservas.
+Gestión de empleados, asignación de servicios a empleados, horarios laborales recurrentes y bloqueos de horario específicos por fecha para reservas.
 
 ## Tecnologías
 
@@ -126,7 +126,7 @@ Reservas-MS-Schedule-Service/
 │   │   │   ├── config/              # Configuración de Spring (Security, JWT, CORS, etc.)
 │   │   │   ├── controller/          # Controladores REST (Employee, Health)
 │   │   │   ├── dto/                 # Data Transfer Objects (Request y Response)
-│   │   │   ├── entity/              # Entidades JPA (Employee, EmployeeServiceOffering, Availability)
+│   │   │   ├── entity/              # Entidades JPA (Employee, EmployeeServiceOffering, WorkSchedule, ScheduleBlock)
 │   │   │   ├── exception/           # Excepciones personalizadas y manejo global
 │   │   │   ├── mapper/              # Mapeadores (MapStruct) entre entidades y DTOs
 │   │   │   ├── repository/          # Repositorios Spring Data JPA
@@ -157,16 +157,64 @@ Reservas-MS-Schedule-Service/
 ### Empleados
 - `POST /api/schedule/employees`: Crear empleado (requiere ROLE_PROVEEDOR) - El providerId se obtiene del JWT
 - `PUT /api/schedule/employees/{id}`: Actualizar empleado existente (requiere ROLE_PROVEEDOR) - Solo el proveedor creador puede modificar
-- `DELETE /api/schedule/employees/{id}`: Desactivar empleado (soft delete) (requiere ROLE_PROVEEDOR) - Solo el proveedor creador puede desactivar
+- `DELETE /api/schedule/employees/{id}`: Eliminar empleado (hard delete) (requiere ROLE_PROVEEDOR) - Solo el proveedor creador puede eliminar
+- `PATCH /api/schedule/employees/{id}/deactivate`: Desactivar empleado (soft delete) (requiere ROLE_PROVEEDOR) - Solo el proveedor creador puede desactivar
+- `PATCH /api/schedule/employees/{id}/activate`: Activar empleado (requiere ROLE_PROVEEDOR) - Solo el proveedor creador puede activar
 - `GET /api/schedule/employees/{id}`: Obtener empleado por ID (requiere ROLE_PROVEEDOR) - Solo el proveedor dueño puede ver
 - `GET /api/schedule/employees`: Listar todos los empleados del proveedor autenticado (requiere ROLE_PROVEEDOR)
-- `GET /api/schedule/employees/active`: Listar solo empleados activos del proveedor autenticado (requiere ROLE_PROVEEDOR)
+- `GET /api/schedule/employees/active`: Listar solo empleados activos de todos los proveedores (Público)
+
+### Horarios Laborales (Work Schedules)
+- `POST /api/schedule/work-schedules`: Crear horario laboral recurrente (requiere ROLE_PROVEEDOR) - Solo el proveedor dueño del empleado puede crear
+- `PUT /api/schedule/work-schedules/{id}`: Actualizar horario laboral existente (requiere ROLE_PROVEEDOR) - Solo el proveedor dueño del empleado puede modificar
+- `DELETE /api/schedule/work-schedules/{id}`: Eliminar horario laboral (hard delete) (requiere ROLE_PROVEEDOR) - Solo el proveedor dueño del empleado puede eliminar
+- `GET /api/schedule/work-schedules/{id}`: Obtener horario laboral por ID (requiere ROLE_PROVEEDOR) - Solo el proveedor dueño del empleado puede ver
+- `GET /api/schedule/work-schedules/employee/{employeeId}`: Listar todos los horarios de un empleado (requiere ROLE_PROVEEDOR) - Solo el proveedor dueño puede ver
+- `GET /api/schedule/work-schedules/employee/{employeeId}/active`: Listar horarios activos de un empleado (requiere autenticación) - Cualquier usuario autenticado puede ver
+- `GET /api/schedule/work-schedules/employee/{employeeId}/public`: Listar horarios de un empleado (requiere autenticación) - Cualquier usuario autenticado puede ver
+
+### Bloqueos de Horario (Schedule Blocks)
+- `POST /api/schedule/schedule-blocks`: Crear bloqueo de horario por fecha específica (requiere ROLE_PROVEEDOR) - Solo el proveedor dueño del empleado puede crear
+- `DELETE /api/schedule/schedule-blocks/{id}`: Eliminar bloqueo de horario (soft delete) (requiere ROLE_PROVEEDOR) - Solo el proveedor dueño del empleado puede eliminar
+- `GET /api/schedule/schedule-blocks/{id}`: Obtener bloqueo de horario por ID (requiere ROLE_PROVEEDOR) - Solo el proveedor dueño del empleado puede ver
+- `GET /api/schedule/schedule-blocks/employee/{employeeId}`: Listar todos los bloqueos de un empleado (requiere ROLE_PROVEEDOR) - Solo el proveedor dueño puede ver
+- `GET /api/schedule/schedule-blocks/employee/{employeeId}/public`: Listar bloqueos de un empleado (requiere autenticación) - Cualquier usuario autenticado puede ver
+- `GET /api/schedule/schedule-blocks/employee/{employeeId}/date-range`: Listar bloqueos en rango de fechas (requiere autenticación)
+- `GET /api/schedule/schedule-blocks/employee/{employeeId}/date`: Listar bloqueos en fecha específica (requiere autenticación)
+- `POST /api/schedule/schedule-blocks/reservation`: Crear bloqueo para reserva (interno, usado por MS-Reservation)
+- `DELETE /api/schedule/schedule-blocks/reservation/{reservationId}`: Cancelar bloqueo de reserva (interno, usado por MS-Reservation)
+- `GET /api/schedule/schedule-blocks/check-availability`: Verificar disponibilidad de empleado (requiere autenticación)
 
 ## Relaciones entre Entidades
 
 - **Employee**: Entidad que representa empleados (recurso humano) asociados a proveedores
 - **EmployeeServiceOffering**: Entidad que representa la relación N:N entre empleados y servicios (un empleado puede ofrecer múltiples servicios)
-- **Availability**: Entidad que representa los horarios de disponibilidad de los empleados para reservas
+- **WorkSchedule**: Entidad que representa los horarios laborales recurrentes de los empleados (ej: todos los lunes 8am-2pm)
+- **ScheduleBlock**: Entidad que representa bloqueos de horario por fecha específica (reservas, vacaciones, permisos, etc.)
+
+## Cambio de Arquitectura (v2.0)
+
+### Problema Anterior
+El diseño original con la tabla `disponibilidad` tenía un problema fundamental: cuando se creaba una reserva para un día específico (ej: lunes 15 de diciembre), el sistema bloqueaba el horario para todos los lunes futuros, afectando indebidamente la disponibilidad del empleado.
+
+### Solución Implementada
+Se separaron los conceptos en dos tablas:
+
+1. **horario_laboral (WorkSchedule)**: Define cuándo trabaja el empleado SEMANALMENTE de forma recurrente
+   - No tiene fecha específica
+   - Solo día de la semana (LUNES, MARTES, etc.)
+   - Horas de trabajo recurrentes
+
+2. **bloqueo_horario (ScheduleBlock)**: Define ocupaciones por FECHA ESPECÍFICA
+   - Tiene fecha exacta (ej: 2026-12-15)
+   - Solo afecta esa fecha específica
+   - Tipos: RESERVA, VACACIONES, PERMISO, ADMINISTRATIVO
+
+### Impacto en las Reservas
+- Cuando se crea una reserva, se crea un `bloqueo_horario` con tipo `RESERVA` para la fecha específica
+- Cuando se cancela una reserva, se desactiva el `bloqueo_horario` correspondiente
+- Los horarios laborales (`horario_laboral`) nunca se modifican por reservas
+- La disponibilidad se verifica combinando ambos conceptos
 
 ## Documentación de API (Swagger/OpenAPI)
 

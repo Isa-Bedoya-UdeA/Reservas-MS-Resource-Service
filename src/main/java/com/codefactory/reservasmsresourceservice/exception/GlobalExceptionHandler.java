@@ -117,11 +117,108 @@ public class GlobalExceptionHandler {
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.FORBIDDEN.value())
                 .error("Forbidden")
-                .message("No tienes permisos para realizar esta acción")
+                .message(ex.getMessage() != null ? ex.getMessage() : "No tienes permisos para realizar esta acción")
                 .path(request.getRequestURI())
                 .build();
 
         return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
+    }
+
+    
+    @ExceptionHandler(WorkScheduleNotFoundException.class)
+    public ResponseEntity<ErrorResponseDTO> handleWorkScheduleNotFoundException(
+            WorkScheduleNotFoundException ex, HttpServletRequest request) {
+        logger.warn("Work schedule not found: {}", ex.getMessage());
+
+        ErrorResponseDTO errorResponse = ErrorResponseDTO.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.NOT_FOUND.value())
+                .error("Not Found")
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(WorkScheduleConflictException.class)
+    public ResponseEntity<ErrorResponseDTO> handleWorkScheduleConflictException(
+            WorkScheduleConflictException ex, HttpServletRequest request) {
+        logger.warn("Work schedule conflict: {}", ex.getMessage());
+
+        ErrorResponseDTO errorResponse = ErrorResponseDTO.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.CONFLICT.value())
+                .error("Conflict")
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(InvalidWorkScheduleException.class)
+    public ResponseEntity<ErrorResponseDTO> handleInvalidWorkScheduleException(
+            InvalidWorkScheduleException ex, HttpServletRequest request) {
+        logger.warn("Invalid work schedule: {}", ex.getMessage());
+
+        ErrorResponseDTO errorResponse = ErrorResponseDTO.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error("Bad Request")
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ScheduleBlockNotFoundException.class)
+    public ResponseEntity<ErrorResponseDTO> handleScheduleBlockNotFoundException(
+            ScheduleBlockNotFoundException ex, HttpServletRequest request) {
+        logger.warn("Schedule block not found: {}", ex.getMessage());
+
+        ErrorResponseDTO errorResponse = ErrorResponseDTO.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.NOT_FOUND.value())
+                .error("Not Found")
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(ScheduleBlockConflictException.class)
+    public ResponseEntity<ErrorResponseDTO> handleScheduleBlockConflictException(
+            ScheduleBlockConflictException ex, HttpServletRequest request) {
+        logger.warn("Schedule block conflict: {}", ex.getMessage());
+
+        ErrorResponseDTO errorResponse = ErrorResponseDTO.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.CONFLICT.value())
+                .error("Conflict")
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(InvalidScheduleBlockException.class)
+    public ResponseEntity<ErrorResponseDTO> handleInvalidScheduleBlockException(
+            InvalidScheduleBlockException ex, HttpServletRequest request) {
+        logger.warn("Invalid schedule block: {}", ex.getMessage());
+
+        ErrorResponseDTO errorResponse = ErrorResponseDTO.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error("Bad Request")
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(Exception.class)

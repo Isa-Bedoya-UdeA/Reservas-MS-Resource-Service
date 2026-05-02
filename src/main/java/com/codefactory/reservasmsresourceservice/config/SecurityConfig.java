@@ -41,6 +41,12 @@ public class SecurityConfig {
                         .requestMatchers("/configuration/**").permitAll()
                         // Endpoint público para empleados activos
                         .requestMatchers("/api/schedule/employees/active").permitAll()
+                        // Work Schedule endpoints requieren autenticación
+                        // (el controlador maneja la autorización por rol con @PreAuthorize)
+                        .requestMatchers("/api/schedule/work-schedules/**").authenticated()
+                        // Schedule Block endpoints requieren autenticación
+                        // (el controlador maneja la autorización por rol con @PreAuthorize)
+                        .requestMatchers("/api/schedule/schedule-blocks/**").authenticated()
                         // Todo lo demás requiere autenticación
                         .anyRequest().authenticated()
                 )

@@ -1,6 +1,18 @@
-# Pruebas de API - MS-Schedule-Service
+# Pruebas de API - MS-Schedule-Service v2.0
 
-Este documento contiene las pruebas de API para el microservicio de Horarios y Disponibilidad.
+Este documento contiene las pruebas de API para el microservicio de Horarios y Empleados con la nueva arquitectura separada.
+
+## Cambio de Arquitectura (v2.0)
+
+### Problema Resuelto
+El diseño anterior con la tabla `disponibilidad` tenía un problema: cuando se creaba una reserva para un día específico, el sistema bloqueaba el horario para todos los días futuros del mismo día de la semana.
+
+### Nueva Arquitectura
+Se separaron los conceptos en:
+1. **Horarios Laborales (WorkSchedule)**: Define cuándo trabaja el empleado SEMANALMENTE (recurrente)
+2. **Bloqueos de Horario (ScheduleBlock)**: Define ocupaciones por FECHA ESPECÍFICA (reservas, vacaciones, etc.)
+
+---
 
 ## Configuración Inicial
 
@@ -48,6 +60,378 @@ Authorization: Bearer [JWT_TOKEN_PROVEEDOR]
 {
     "fullName": "John Doe",
     "phone": "+573001234567",
+    "notes": "Barbería especializado en cortes modernos"
+}
+```
+**Código esperado:** 201 Created
+**Response esperado:**
+```json
+{
+    "id": "uuid-del-empleado",
+    "providerId": "uuid-del-proveedor",
+    "fullName": "John Doe",
+    "phone": "+573001234567",
+    "active": true,
+    "dateHired": "2026-04-28T12:00:00",
+    "notes": "Barbería especializado en cortes modernos",
+    "createdAt": "2026-04-28T12:00:00",
+    "updatedAt": "2026-04-28T12:00:00"
+}
+```
+
+---
+
+## Horarios Laborales (Work Schedules)
+
+### 2. Crear Horario Laboral (Requiere ROLE_PROVEEDOR)
+
+**Nombre:** Create Work Schedule - Success
+**URL:** `http://localhost:8083/api/schedule/work-schedules`
+**Método:** POST
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer [JWT_TOKEN_PROVEEDOR]
+```
+**Body:**
+```json
+{
+    "employeeId": "uuid-del-empleado",
+    "dayOfWeek": "LUNES",
+    "startTime": "08:00",
+    "endTime": "17:00"
+}
+```
+**Código esperado:** 201 Created
+**Response esperado:**
+```json
+{
+    "id": "uuid-del-horario",
+    "employeeId": "uuid-del-empleado",
+    "dayOfWeek": "LUNES",
+    "startTime": "08:00",
+    "endTime": "17:00",
+    "active": true,
+    "createdAt": "2026-04-28T12:00:00",
+    "updatedAt": "2026-04-28T12:00:00"
+}
+```
+
+### 3. Crear Horario Laboral - Conflicto (409 Conflict)
+
+**Nombre:** Create Work Schedule - Conflict
+**URL:** `http://localhost:8083/api/schedule/work-schedules`
+**Método:** POST
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer [JWT_TOKEN_PROVEEDOR]
+```
+**Body:** (Intenta crear un horario que se superpone con uno existente)
+```json
+{
+    "employeeId": "uuid-del-empleado",
+    "dayOfWeek": "LUNES",
+    "startTime": "10:00",
+    "endTime": "18:00"
+}
+```
+**Código esperado:** 409 Conflict
+**Response esperado:**
+```json
+{
+    "timestamp": "2026-04-30T12:00:00",
+    "status": 409,
+    "error": "Conflict",
+    "message": "Ya existe un horario laboral que se superpone con el rango de tiempo especificado para el día LUNES",
+    "path": "/api/schedule/work-schedules"
+}
+```
+
+### 4. Actualizar Horario Laboral (Requiere ROLE_PROVEEDOR)
+
+**Nombre:** Update Work Schedule - Success
+**URL:** `http://localhost:8083/api/schedule/work-schedules/[UUID-HORARIO]`
+**Método:** PUT
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer [JWT_TOKEN_PROVEEDOR]
+```
+**Body:**
+```json
+{
+    "dayOfWeek": "MARTES",
+    "startTime": "09:00",
+    "endTime": "18:00"
+}
+```
+**Código esperado:** 200 OK
+**Response esperado:**
+```json
+{
+    "id": "uuid-del-horario",
+    "employeeId": "uuid-del-empleado",
+    "dayOfWeek": "MARTES",
+    "startTime": "09:00",
+    "endTime": "18:00",
+    "active": true,
+    "createdAt": "2026-04-28T12:00:00",
+    "updatedAt": "2026-04-30T12:00:00"
+}
+```
+
+### 5. Eliminar Horario Laboral (Requiere ROLE_PROVEEDOR)
+
+**Nombre:** Delete Work Schedule - Success
+**URL:** `http://localhost:8083/api/schedule/work-schedules/[UUID-HORARIO]`
+**Método:** DELETE
+**Headers:**
+```
+Authorization: Bearer [JWT_TOKEN_PROVEEDOR]
+```
+**Código esperado:** 204 No Content
+**Response esperado:** (vacío)
+
+### 6. Obtener Horario Laboral por ID (Requiere ROLE_PROVEEDOR)
+
+**Nombre:** Get Work Schedule by ID - Success
+**URL:** `http://localhost:8083/api/schedule/work-schedules/[UUID-HORARIO]`
+**Método:** GET
+**Headers:**
+```
+Authorization: Bearer [JWT_TOKEN_PROVEEDOR]
+```
+**Código esperado:** 200 OK
+**Response esperado:** (mismo formato que creación)
+
+### 7. Listar Horarios Laborales de Empleado (Requiere ROLE_PROVEEDOR)
+
+**Nombre:** Get Work Schedules by Employee - Success
+**URL:** `http://localhost:8083/api/schedule/work-schedules/employee/[UUID-EMPLEADO]`
+**Método:** GET
+**Headers:**
+```
+Authorization: Bearer [JWT_TOKEN_PROVEEDOR]
+```
+**Código esperado:** 200 OK
+**Response esperado:** (array de horarios)
+
+### 8. Listar Horarios Activos de Empleado (Público)
+
+**Nombre:** Get Active Work Schedules by Employee - Success
+**URL:** `http://localhost:8083/api/schedule/work-schedules/employee/[UUID-EMPLEADO]/active`
+**Método:** GET
+**Headers:**
+```
+Authorization: Bearer [JWT_TOKEN_CUALQUIERA]
+```
+**Código esperado:** 200 OK
+**Response esperado:** (array de horarios activos ordenados)
+
+---
+
+## Bloqueos de Horario (Schedule Blocks)
+
+### 9. Crear Bloqueo de Horario (Requiere ROLE_PROVEEDOR)
+
+**Nombre:** Create Schedule Block - Success
+**URL:** `http://localhost:8083/api/schedule/schedule-blocks`
+**Método:** POST
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer [JWT_TOKEN_PROVEEDOR]
+```
+**Body:**
+```json
+{
+    "employeeId": "uuid-del-empleado",
+    "date": "2026-12-15",
+    "startTime": "10:00",
+    "endTime": "11:00",
+    "blockType": "VACACIONES"
+}
+```
+**Código esperado:** 201 Created
+**Response esperado:**
+```json
+{
+    "id": "uuid-del-bloqueo",
+    "employeeId": "uuid-del-empleado",
+    "reservationId": null,
+    "date": "2026-12-15",
+    "startTime": "10:00",
+    "endTime": "11:00",
+    "blockType": "VACACIONES",
+    "active": true,
+    "createdAt": "2026-04-30T12:00:00",
+    "updatedAt": "2026-04-30T12:00:00"
+}
+```
+
+### 10. Crear Bloqueo de Horario - Fuera de Horario Laboral (400 Bad Request)
+
+**Nombre:** Create Schedule Block - Outside Work Hours
+**URL:** `http://localhost:8083/api/schedule/schedule-blocks`
+**Método:** POST
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer [JWT_TOKEN_PROVEEDOR]
+```
+**Body:** (Intenta bloquear un horario cuando el empleado no trabaja)
+```json
+{
+    "employeeId": "uuid-del-empleado",
+    "date": "2026-12-15",
+    "startTime": "20:00",
+    "endTime": "21:00",
+    "blockType": "VACACIONES"
+}
+```
+**Código esperado:** 400 Bad Request
+**Response esperado:**
+```json
+{
+    "timestamp": "2026-04-30T12:00:00",
+    "status": 400,
+    "error": "Bad Request",
+    "message": "El empleado no trabaja durante el horario especificado para el día LUNES",
+    "path": "/api/schedule/schedule-blocks"
+}
+```
+
+### 11. Crear Bloqueo para Reserva (Interno)
+
+**Nombre:** Create Reservation Block - Success
+**URL:** `http://localhost:8083/api/schedule/schedule-blocks/reservation`
+**Método:** POST
+**Headers:**
+```
+Authorization: Bearer [JWT_TOKEN_MICROSERVICIO_RESERVAS]
+```
+**Query Parameters:**
+```
+employeeId=uuid-del-empleado
+reservationId=uuid-de-la-reserva
+date=2026-12-15
+startTime=14:00
+endTime=15:00
+```
+**Código esperado:** 201 Created
+**Response esperado:** (vacío)
+
+### 12. Cancelar Bloqueo de Reserva (Interno)
+
+**Nombre:** Cancel Reservation Block - Success
+**URL:** `http://localhost:8083/api/schedule/schedule-blocks/reservation/[UUID-RESERVA]`
+**Método:** DELETE
+**Headers:**
+```
+Authorization: Bearer [JWT_TOKEN_MICROSERVICIO_RESERVAS]
+```
+**Código esperado:** 204 No Content
+**Response esperado:** (vacío)
+
+### 13. Verificar Disponibilidad de Empleado
+
+**Nombre:** Check Employee Availability - Available
+**URL:** `http://localhost:8083/api/schedule/schedule-blocks/check-availability`
+**Método:** GET
+**Headers:**
+```
+Authorization: Bearer [JWT_TOKEN_CUALQUIERA]
+```
+**Query Parameters:**
+```
+employeeId=uuid-del-empleado
+date=2026-12-15
+startTime=14:00
+endTime=15:00
+```
+**Código esperado:** 200 OK
+**Response esperado:** `true`
+
+### 14. Listar Bloqueos por Rango de Fechas
+
+**Nombre:** Get Schedule Blocks by Date Range - Success
+**URL:** `http://localhost:8083/api/schedule/schedule-blocks/employee/[UUID-EMPLEADO]/date-range`
+**Método:** GET
+**Headers:**
+```
+Authorization: Bearer [JWT_TOKEN_CUALQUIERA]
+```
+**Query Parameters:**
+```
+startDate=2026-12-01
+endDate=2026-12-31
+```
+**Código esperado:** 200 OK
+**Response esperado:** (array de bloqueos en el rango)
+
+---
+
+## Health Check
+
+### 15. Health Check
+
+**Nombre:** Health Check - Success
+**URL:** `http://localhost:8083/api/`
+**Método:** GET
+**Código esperado:** 200 OK
+**Response esperado:**
+```json
+{
+    "status": "UP",
+    "timestamp": "2026-04-28T12:00:00"
+}
+```
+
+### 16. Version Check
+
+**Nombre:** Version Check - Success
+**URL:** `http://localhost:8083/api/version`
+**Método:** GET
+**Código esperado:** 200 OK
+**Response esperado:**
+```json
+{
+    "version": "2.0.0-SNAPSHOT",
+    "service": "Reservas-MS-Schedule-Service"
+}
+```
+
+---
+
+## Notas Importantes
+
+### Cambios Principales v2.0
+
+1. **Nuevos Endpoints:**
+   - `/api/schedule/work-schedules/*` - Para horarios laborales recurrentes
+   - `/api/schedule/schedule-blocks/*` - Para bloqueos por fecha específica
+
+2. **Endpoint Eliminados:**
+   - `/api/schedule/availability/*` - Reemplazado por los nuevos endpoints
+
+3. **Validación de Disponibilidad:**
+   - Los bloqueos solo se pueden crear dentro de horarios laborales existentes
+   - Las reservas ahora crean bloqueos específicos por fecha, no afectan horarios recurrentes
+
+4. **Tipos de Bloqueo:**
+   - `RESERVA` - Creado automáticamente por MS-Reservation
+   - `VACACIONES` - Creado manualmente por proveedor
+   - `PERMISO` - Creado manualmente por proveedor
+   - `ADMINISTRATIVO` - Creado manualmente por proveedor
+
+### Códigos de Error
+
+- **400 Bad Request**: Datos inválidos, fuera de horario laboral, fecha pasada
+- **401 Unauthorized**: No autenticado
+- **403 Forbidden**: No tiene rol PROVEEDOR o no es dueño del empleado
+- **404 Not Found**: Recurso no encontrado
+- **409 Conflict**: Superposición de horarios o bloqueos
     "notes": "Senior stylist with 5 years experience"
 }
 ```
@@ -412,77 +796,3 @@ Content-Type: application/json
 ```
 **Nota:** Retorna solo los empleados activos del proveedor autenticado.
 
----
-
-## Health Check
-
-### 12. Health Check
-
-**Nombre:** Health Check - Success
-**URL:** `http://localhost:8083/api/`
-**Método:** GET
-**Código esperado:** 200 OK
-**Response esperado:**
-```json
-{
-    "status": "UP",
-    "timestamp": "2026-04-28T12:00:00"
-}
-```
-
----
-
-### 13. Version Check
-
-**Nombre:** Version Check - Success
-**URL:** `http://localhost:8083/api/version`
-**Método:** GET
-**Código esperado:** 200 OK
-**Response esperado:**
-```json
-{
-    "version": "1.0.0-SNAPSHOT",
-    "service": "Reservas-MS-Schedule-Service"
-}
-```
-
----
-
-## Notas Importantes
-
-### Obtención de Tokens JWT
-
-Para obtener los tokens JWT necesarios para las pruebas que requieren autenticación:
-
-1. **Token de Proveedor:**
-   - Registra un usuario con rol PROVEEDOR en el Auth Service
-   - Inicia sesión: `POST http://localhost:8081/api/auth/login`
-   - Usa el `accessToken` retornado
-
-### IDs de Prueba
-
-Para las pruebas que requieren IDs específicos, puedes obtenerlos de:
-- **Empleados:** Ejecuta primero la prueba #10 (Get Employees by Provider) y usa los IDs retornados
-- **Proveedores:** Registra un proveedor en el Auth Service y usa el ID retornado
-
-### Orden de Ejecución Recomendado
-
-Para una ejecución ordenada de las pruebas:
-1. Primero ejecuta las pruebas de Health Check (12-13)
-2. Luego ejecuta las pruebas de creación de empleados (1-3)
-3. Luego ejecuta las pruebas de actualización/desactivación (4-7)
-4. Finalmente ejecuta las pruebas de listado (8-11)
-
-### Precondiciones
-
-Antes de ejecutar estas pruebas, asegúrate de:
-1. Tener el Auth Service corriendo en `http://localhost:8081`
-2. Tener el Schedule Service corriendo en `http://localhost:8083`
-3. Tener usuarios registrados en el Auth Service con el rol PROVEEDOR
-4. Tener la base de datos configurada y accesible
-
-### Documentación Swagger
-
-La documentación interactiva de la API está disponible en:
-- **Swagger UI:** `http://localhost:8083/swagger-ui.html`
-- **OpenAPI JSON:** `http://localhost:8083/v3/api-docs`
