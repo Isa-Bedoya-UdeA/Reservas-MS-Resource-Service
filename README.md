@@ -164,6 +164,15 @@ Reservas-MS-Schedule-Service/
 - `GET /api/schedule/employees`: Listar todos los empleados del proveedor autenticado (requiere ROLE_PROVEEDOR)
 - `GET /api/schedule/employees/active`: Listar solo empleados activos de todos los proveedores (Público)
 
+### Asociación Empleado-Servicio (Employee Service Offerings)
+- `POST /api/schedule/employee-services`: Asociar empleado a servicio (requiere ROLE_PROVEEDOR) - El proveedor debe ser dueño del empleado y del servicio
+- `PATCH /api/schedule/employee-services/{id}/deactivate`: Desactivar asociación (requiere ROLE_PROVEEDOR) - Solo el proveedor dueño puede desactivar
+- `PATCH /api/schedule/employee-services/{id}/activate`: Activar asociación (requiere ROLE_PROVEEDOR) - Solo el proveedor dueño puede activar
+- `DELETE /api/schedule/employee-services/{id}`: Eliminar asociación (hard delete) (requiere ROLE_PROVEEDOR) - Solo el proveedor dueño puede eliminar
+- `GET /api/schedule/employee-services/service/{serviceId}`: Listar empleados de un servicio (requiere ROLE_PROVEEDOR) - Solo el proveedor dueño del servicio puede ver
+- `GET /api/schedule/employee-services/employee/{employeeId}`: Listar servicios de un empleado (requiere ROLE_PROVEEDOR) - Solo el proveedor dueño del empleado puede ver
+- `GET /api/schedule/employee-services/service/{serviceId}/active`: Listar empleados activos de un servicio (Público) - Cualquier usuario puede ver (para reservas)
+
 ### Horarios Laborales (Work Schedules)
 - `POST /api/schedule/work-schedules`: Crear horario laboral recurrente (requiere ROLE_PROVEEDOR) - Solo el proveedor dueño del empleado puede crear
 - `PUT /api/schedule/work-schedules/{id}`: Actualizar horario laboral existente (requiere ROLE_PROVEEDOR) - Solo el proveedor dueño del empleado puede modificar
