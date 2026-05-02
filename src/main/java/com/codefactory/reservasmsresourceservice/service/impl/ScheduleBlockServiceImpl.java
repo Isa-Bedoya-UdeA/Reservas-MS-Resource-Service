@@ -15,6 +15,7 @@ import com.codefactory.reservasmsresourceservice.repository.ScheduleBlockReposit
 import com.codefactory.reservasmsresourceservice.repository.WorkScheduleRepository;
 import com.codefactory.reservasmsresourceservice.service.ScheduleBlockService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +30,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ScheduleBlockServiceImpl implements ScheduleBlockService {
 
     private final ScheduleBlockRepository scheduleBlockRepository;
@@ -218,12 +220,17 @@ public class ScheduleBlockServiceImpl implements ScheduleBlockService {
     @Override
     @Transactional
     public void cancelReservationBlock(UUID reservationId) {
+        log.info("Intentando cancelar bloqueo para reservationId: {}", reservationId);
+        
         Optional<ScheduleBlock> scheduleBlock = scheduleBlockRepository.findActiveByReservationId(reservationId);
         
         if (scheduleBlock.isPresent()) {
             ScheduleBlock block = scheduleBlock.get();
+            
             block.setActive(false);
-            scheduleBlockRepository.save(block);
+            ScheduleBlock savedBlock = scheduleBlockRepository.save(block);
+        } else {
+            throw new ScheduleBlockNotFoundException("No se encontró un bloqueo activo para la reserva con ID: " + reservationId);
         }
     }
 
@@ -264,9 +271,5 @@ public class ScheduleBlockServiceImpl implements ScheduleBlockService {
     private boolean isTimeWithinWorkSchedule(LocalTime blockStart, LocalTime blockEnd, WorkSchedule workSchedule) {
         return blockStart.isBefore(workSchedule.getEndTime()) && 
                blockEnd.isAfter(workSchedule.getStartTime());
-    }
-
-    private boolean isTimeOverlapping(LocalTime start1, LocalTime end1, LocalTime start2, LocalTime end2) {
-        return start1.isBefore(end2) && end1.isAfter(start2);
     }
 }
