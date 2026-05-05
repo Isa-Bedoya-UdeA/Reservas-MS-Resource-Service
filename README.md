@@ -21,7 +21,7 @@ Gestión de empleados, asignación de servicios a empleados, horarios laborales 
 ### Backend
 
 * **Java 17**
-* **Spring Boot 3.5.13**
+* **Spring Boot 3.5.14**
 * **Spring Security** (Autenticación y autorización)
 * **Spring Data JPA** (Persistencia)
 * **JWT** (JSON Web Tokens para autenticación)
@@ -201,33 +201,27 @@ Reservas-MS-Schedule-Service/
 - **WorkSchedule**: Entidad que representa los horarios laborales recurrentes de los empleados (ej: todos los lunes 8am-2pm)
 - **ScheduleBlock**: Entidad que representa bloqueos de horario por fecha específica (reservas, vacaciones, permisos, etc.)
 
-## Cambio de Arquitectura (v2.0)
+## Diagramas
 
-### Problema Anterior
-El diseño original con la tabla `disponibilidad` tenía un problema fundamental: cuando se creaba una reserva para un día específico (ej: lunes 15 de diciembre), el sistema bloqueaba el horario para todos los lunes futuros, afectando indebidamente la disponibilidad del empleado.
+### Diagrama de Paquetes y Componentes
+![Paquetes y Componentes](docs/components.png)
 
-### Solución Implementada
-Se separaron los conceptos en dos tablas:
-
-1. **horario_laboral (WorkSchedule)**: Define cuándo trabaja el empleado SEMANALMENTE de forma recurrente
-   - No tiene fecha específica
-   - Solo día de la semana (LUNES, MARTES, etc.)
-   - Horas de trabajo recurrentes
-
-2. **bloqueo_horario (ScheduleBlock)**: Define ocupaciones por FECHA ESPECÍFICA
-   - Tiene fecha exacta (ej: 2026-12-15)
-   - Solo afecta esa fecha específica
-   - Tipos: RESERVA, VACACIONES, PERMISO, ADMINISTRATIVO
-
-### Impacto en las Reservas
-- Cuando se crea una reserva, se crea un `bloqueo_horario` con tipo `RESERVA` para la fecha específica
-- Cuando se cancela una reserva, se desactiva el `bloqueo_horario` correspondiente
-- Los horarios laborales (`horario_laboral`) nunca se modifican por reservas
-- La disponibilidad se verifica combinando ambos conceptos
+### Diagrama MER Lógico
+![MER Lógico](docs/mer-diagram.png)
 
 ## Documentación de API (Swagger/OpenAPI)
+![Swagger](docs/swagger.png)
 
 **Ruta de acceso:** http://localhost:8083/swagger-ui/index.html#/
+
+## Variables de Entorno para Despliegue
+
+Para configurar el despliegue del microservicio, consulta la documentación detallada de variables de entorno:
+
+**[docs/environment-variables.md](docs/environment-variables.md)**
+
+También puedes usar el archivo de ejemplo como plantilla:
+**[.env.example](.env.example)** - Copia este archivo a `.env` y configura tus valores.
 
 ## Pruebas en Postman
 
