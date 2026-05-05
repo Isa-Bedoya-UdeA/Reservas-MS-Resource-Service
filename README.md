@@ -209,6 +209,9 @@ Reservas-MS-Schedule-Service/
 ### Diagrama MER Lógico
 ![MER Lógico](docs/mer-diagram.png)
 
+### Diagrama de despliegue
+![Diagrama de despliegue](docs/deployment-diagram.png)
+
 ## Documentación de API (Swagger/OpenAPI)
 ![Swagger](docs/swagger.png)
 
