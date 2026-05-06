@@ -203,6 +203,9 @@ Reservas-MS-Schedule-Service/
 
 ## Diagramas
 
+### Diseño Arquitectonico
+![Diseño Arquitectonico](docs/architecture.png)
+
 ### Diagrama de Paquetes y Componentes
 ![Paquetes y Componentes](docs/components.png)
 
